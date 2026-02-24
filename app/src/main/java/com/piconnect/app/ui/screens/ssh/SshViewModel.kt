@@ -9,10 +9,12 @@ import com.piconnect.app.data.model.ConnectionState
 import com.piconnect.app.data.repository.DeviceRepository
 import com.piconnect.app.data.ssh.SshManager
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.io.InputStream
 import java.io.OutputStream
@@ -89,7 +91,7 @@ class SshViewModel(application: Application) : AndroidViewModel(application) {
                             _terminalOutput.value += output
                         }
                     } else {
-                        Thread.sleep(100)
+                        delay(100)
                     }
                 }
             } catch (_: Exception) {
@@ -128,6 +130,14 @@ class SshViewModel(application: Application) : AndroidViewModel(application) {
 
     override fun onCleared() {
         super.onCleared()
-        disconnect()
+        // Synchronously clean up SSH resources to ensure they are released before ViewModel is destroyed
+        runBlocking(Dispatchers.IO) {
+            try {
+                shellChannel?.disconnect()
+                session?.let { sshManager.disconnect(it) }
+            } catch (_: Exception) {
+                // Ignore cleanup errors
+            }
+        }
     }
 }

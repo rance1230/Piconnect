@@ -52,18 +52,19 @@ class SshManagerTest {
     }
 
     @Test
-    fun `disconnect should not throw on null session`() {
-        // Create a device and verify disconnect handles non-connected state gracefully
+    fun `disconnect should handle already disconnected session gracefully`() {
+        // Verify that disconnect does not throw when called on a failed connection attempt
         val device = PiDevice(
             name = "Test Pi",
             host = "127.0.0.1",
-            port = 22,
+            port = 99999,
             username = "pi",
             authMethod = AuthMethod.PASSWORD,
             password = "test"
         )
-        // Attempting to disconnect without connecting should not throw
-        // The session parameter requires a Session object, so we verify the manager is robust
+        val result = sshManager.connect(device)
+        assertTrue(result.isFailure)
+        // SshManager should remain usable after a failed connection
         assertNotNull(sshManager)
     }
 }

@@ -25,6 +25,9 @@ class SshManager {
                 session.setPassword(device.password)
             }
 
+            // WARNING: StrictHostKeyChecking is disabled for convenience.
+            // This makes connections vulnerable to man-in-the-middle attacks.
+            // For production use, implement proper host key verification.
             val config = Properties()
             config["StrictHostKeyChecking"] = "no"
             session.setConfig(config)
