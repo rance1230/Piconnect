@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PiConnect</string>
+    <string name="login_title">Sign in to Raspberry Pi Connect</string>
+    <string name="login_username_hint">Username or Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_button">Sign In</string>
+    <string name="login_loading">Signing in…</string>
+    <string name="devices_title">My Devices</string>
+    <string name="devices_empty">No devices connected</string>
+    <string name="ssh_connect">Connect via SSH</string>
+    <string name="ssh_terminal_title">SSH Terminal</string>
+    <string name="ssh_command_hint">Enter command…</string>
+    <string name="ssh_send">Send</string>
+    <string name="logout">Sign Out</string>
+    <string name="error_generic">An error occurred. Please try again.</string>
+    <string name="error_network">Network error. Check your connection.</string>
+    <string name="error_auth">Invalid credentials. Please try again.</string>
+    <string name="device_status_online">Online</string>
+    <string name="device_status_offline">Offline</string>
+</resources>
