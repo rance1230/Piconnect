@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="raspberry_red">#C51A4A</color>
+    <color name="raspberry_dark">#8B1234</color>
+    <color name="terminal_bg">#1A1A2E</color>
+    <color name="terminal_text">#00FF41</color>
+</resources>
