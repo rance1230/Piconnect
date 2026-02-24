@@ -26,7 +26,7 @@ class SshTerminalViewModel(
     private val deviceId: String
 ) : ViewModel() {
 
-    private val _connectionState = MutableStateFlow<SshConnectionState>(SshConnectionState.Connecting)
+    private val _connectionState = MutableStateFlow<SshConnectionState>(SshConnectionState.Disconnected)
     val connectionState: StateFlow<SshConnectionState> = _connectionState.asStateFlow()
 
     private val _terminalOutput = MutableStateFlow<List<TerminalLine>>(emptyList())
@@ -35,13 +35,29 @@ class SshTerminalViewModel(
     private val _commandInput = MutableStateFlow("")
     val commandInput: StateFlow<String> = _commandInput.asStateFlow()
 
+    // SSH credential inputs (held in memory only, never persisted)
+    private val _sshUsername = MutableStateFlow("pi")
+    val sshUsername: StateFlow<String> = _sshUsername.asStateFlow()
+
+    private val _sshPassword = MutableStateFlow("")
+    val sshPassword: StateFlow<String> = _sshPassword.asStateFlow()
+
     private var sshClient: SshClient? = null
+
+    fun onSshUsernameChanged(value: String) { _sshUsername.value = value }
+    fun onSshPasswordChanged(value: String) { _sshPassword.value = value }
 
     fun onCommandInputChanged(value: String) {
         _commandInput.value = value
     }
 
     fun connect() {
+        val user = _sshUsername.value.trim()
+        val pass = _sshPassword.value
+        if (user.isBlank()) {
+            _connectionState.value = SshConnectionState.Error("SSH username is required")
+            return
+        }
         viewModelScope.launch {
             _connectionState.value = SshConnectionState.Connecting
             appendSystemMessage("Creating SSH tunnel via Raspberry Pi Connect…")
@@ -50,7 +66,7 @@ class SshTerminalViewModel(
             tunnelResult.fold(
                 onSuccess = { tunnel ->
                     appendSystemMessage("Tunnel established. Connecting via SSH…")
-                    startSshSession(tunnel.websocketUrl)
+                    startSshSession(tunnel.websocketUrl, user, pass)
                 },
                 onFailure = { error ->
                     _connectionState.value = SshConnectionState.Error(
@@ -61,12 +77,7 @@ class SshTerminalViewModel(
         }
     }
 
-    private fun startSshSession(websocketUrl: String) {
-        // SSH credentials: use 'pi' as default user.
-        // In a real app, you would prompt the user or store credentials securely.
-        val sshUser = "pi"
-        val sshPass = ""
-
+    private fun startSshSession(websocketUrl: String, sshUser: String, sshPass: String) {
         sshClient = SshClient(
             websocketUrl = websocketUrl,
             sshUsername = sshUser,

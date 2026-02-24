@@ -10,6 +10,10 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +22,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.piconnect.app.viewmodel.SshTerminalViewModel
@@ -39,11 +46,9 @@ fun SshTerminalScreen(
     val connectionState by viewModel.connectionState.collectAsState()
     val terminalOutput by viewModel.terminalOutput.collectAsState()
     val commandInput by viewModel.commandInput.collectAsState()
+    val sshUsername by viewModel.sshUsername.collectAsState()
+    val sshPassword by viewModel.sshPassword.collectAsState()
     val listState = rememberLazyListState()
-
-    LaunchedEffect(Unit) {
-        viewModel.connect()
-    }
 
     LaunchedEffect(terminalOutput.size) {
         if (terminalOutput.isNotEmpty()) {
@@ -212,14 +217,14 @@ fun SshTerminalScreen(
                     }
                 }
                 is SshConnectionState.Disconnected -> {
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.Center)
-                            .padding(24.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Session ended", color = Color.Gray, fontFamily = FontFamily.Monospace)
-                    }
+                    SshCredentialsForm(
+                        modifier = Modifier.align(Alignment.Center),
+                        username = sshUsername,
+                        password = sshPassword,
+                        onUsernameChanged = viewModel::onSshUsernameChanged,
+                        onPasswordChanged = viewModel::onSshPasswordChanged,
+                        onConnect = viewModel::connect
+                    )
                 }
                 is SshConnectionState.Connected -> {
                     LazyColumn(
@@ -254,4 +259,91 @@ fun TerminalLine(line: com.piconnect.app.viewmodel.TerminalLine) {
         fontSize = 13.sp,
         lineHeight = 18.sp
     )
+}
+
+@Composable
+fun SshCredentialsForm(
+    modifier: Modifier = Modifier,
+    username: String,
+    password: String,
+    onUsernameChanged: (String) -> Unit,
+    onPasswordChanged: (String) -> Unit,
+    onConnect: () -> Unit
+) {
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = modifier.padding(24.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF0D0D1A)),
+        shape = MaterialTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier.padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "SSH Credentials",
+                color = TerminalGreen,
+                fontFamily = FontFamily.Monospace,
+                fontWeight = FontWeight.Bold,
+                fontSize = 16.sp
+            )
+            OutlinedTextField(
+                value = username,
+                onValueChange = onUsernameChanged,
+                label = { Text("Username", color = Color.Gray, fontFamily = FontFamily.Monospace) },
+                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = TerminalGreen) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TerminalGreen,
+                    unfocusedTextColor = TerminalGreen,
+                    cursorColor = TerminalGreen,
+                    focusedBorderColor = TerminalGreen,
+                    unfocusedBorderColor = Color(0xFF333366)
+                ),
+                textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = password,
+                onValueChange = onPasswordChanged,
+                label = { Text("Password", color = Color.Gray, fontFamily = FontFamily.Monospace) },
+                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null, tint = TerminalGreen) },
+                trailingIcon = {
+                    IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                        Icon(
+                            imageVector = if (passwordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                            contentDescription = null,
+                            tint = Color.Gray
+                        )
+                    }
+                },
+                visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Password,
+                    imeAction = ImeAction.Done
+                ),
+                keyboardActions = KeyboardActions(onDone = { onConnect() }),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedTextColor = TerminalGreen,
+                    unfocusedTextColor = TerminalGreen,
+                    cursorColor = TerminalGreen,
+                    focusedBorderColor = TerminalGreen,
+                    unfocusedBorderColor = Color(0xFF333366)
+                ),
+                textStyle = LocalTextStyle.current.copy(fontFamily = FontFamily.Monospace),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Button(
+                onClick = onConnect,
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF333366))
+            ) {
+                Text("Connect via SSH", color = TerminalGreen, fontFamily = FontFamily.Monospace)
+            }
+        }
+    }
 }

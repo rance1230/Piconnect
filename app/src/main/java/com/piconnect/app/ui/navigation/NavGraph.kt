@@ -14,12 +14,18 @@ import com.piconnect.app.ui.screens.SshTerminalScreen
 import com.piconnect.app.viewmodel.DeviceListViewModel
 import com.piconnect.app.viewmodel.LoginViewModel
 import com.piconnect.app.viewmodel.SshTerminalViewModel
+import java.net.URLDecoder
+import java.net.URLEncoder
 
 sealed class Screen(val route: String) {
     object Login : Screen("login")
     object DeviceList : Screen("devices")
     object SshTerminal : Screen("ssh/{deviceId}/{deviceName}") {
-        fun createRoute(deviceId: String, deviceName: String) = "ssh/$deviceId/$deviceName"
+        fun createRoute(deviceId: String, deviceName: String): String {
+            val encodedId = URLEncoder.encode(deviceId, "UTF-8")
+            val encodedName = URLEncoder.encode(deviceName, "UTF-8")
+            return "ssh/$encodedId/$encodedName"
+        }
     }
 }
 
@@ -62,8 +68,8 @@ fun NavGraph() {
                 navArgument("deviceName") { type = NavType.StringType }
             )
         ) { backStackEntry ->
-            val deviceId = backStackEntry.arguments?.getString("deviceId") ?: ""
-            val deviceName = backStackEntry.arguments?.getString("deviceName") ?: ""
+            val deviceId = URLDecoder.decode(backStackEntry.arguments?.getString("deviceId") ?: "", "UTF-8")
+            val deviceName = URLDecoder.decode(backStackEntry.arguments?.getString("deviceName") ?: "", "UTF-8")
             val viewModel = SshTerminalViewModel(repository, deviceId)
             SshTerminalScreen(
                 viewModel = viewModel,
