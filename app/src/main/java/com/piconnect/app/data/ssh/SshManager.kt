@@ -40,7 +40,7 @@ class SshManager {
         }
     }
 
-    fun executeCommand(session: Session, command: String): Result<String> {
+    suspend fun executeCommand(session: Session, command: String): Result<String> {
         return try {
             val channel = session.openChannel("exec") as ChannelExec
             channel.setCommand(command)
@@ -53,7 +53,7 @@ class SshManager {
             channel.connect()
 
             while (!channel.isClosed) {
-                Thread.sleep(100)
+                kotlinx.coroutines.delay(100)
             }
 
             val output = outputStream.toString("UTF-8")

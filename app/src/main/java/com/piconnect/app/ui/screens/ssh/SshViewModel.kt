@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 
@@ -94,8 +94,10 @@ class SshViewModel(application: Application) : AndroidViewModel(application) {
                         delay(100)
                     }
                 }
-            } catch (_: Exception) {
-                // Stream closed
+            } catch (e: IOException) {
+                // Stream closed - normal termination when channel disconnects
+            } catch (e: Exception) {
+                _terminalOutput.value += "\nError reading output: ${e.message}\n"
             }
         }
     }
@@ -130,14 +132,12 @@ class SshViewModel(application: Application) : AndroidViewModel(application) {
 
     override fun onCleared() {
         super.onCleared()
-        // Synchronously clean up SSH resources to ensure they are released before ViewModel is destroyed
-        runBlocking(Dispatchers.IO) {
-            try {
-                shellChannel?.disconnect()
-                session?.let { sshManager.disconnect(it) }
-            } catch (_: Exception) {
-                // Ignore cleanup errors
-            }
+        // Clean up SSH resources without blocking the main thread
+        try {
+            shellChannel?.disconnect()
+            session?.let { sshManager.disconnect(it) }
+        } catch (_: Exception) {
+            // Ignore cleanup errors during ViewModel destruction
         }
     }
 }
