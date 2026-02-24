@@ -1,0 +1,26 @@
+<resources>
+    <string name="app_name">PiConnect</string>
+    <string name="add_device">Add Device</string>
+    <string name="device_name">Device Name</string>
+    <string name="host_ip">Host / IP Address</string>
+    <string name="port">Port</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="private_key">Private Key</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="delete">Delete</string>
+    <string name="pi_connect">Pi Connect</string>
+    <string name="ssh_terminal">SSH Terminal</string>
+    <string name="no_devices">No devices added yet.\nTap + to add a Raspberry Pi.</string>
+    <string name="auth_method">Authentication Method</string>
+    <string name="use_rpi_connect">Use Raspberry Pi Connect</string>
+    <string name="enter_command">Enter command…</string>
+    <string name="connecting">Connecting…</string>
+    <string name="connected">Connected</string>
+    <string name="disconnected">Disconnected</string>
+    <string name="connection_error">Connection Error</string>
+    <string name="loading">Loading…</string>
+</resources>
